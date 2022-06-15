@@ -3,36 +3,48 @@ import java.util.Scanner;
 public class Console {
 
     private static String BIRTH_INDICATOR = "*"; //'*' oder 'geboren am'
+    private String firstName;
+    private String lastName;
+    private DateValue birthday;
+    private String birthPlace;
+    private String description;
+    private Gender gender;
 
     public static void main(String[] args) {
+        Console console = new Console();
+    }
+
+    public Console() {
+        getInfo();
+        printArticle();
+    }
+
+    private void getInfo() {
         Scanner stringScanner = new Scanner(System.in);
 
         System.out.print("Vorname(n): ");
-        String firstName = stringScanner.nextLine();
+        firstName = stringScanner.nextLine();
 
         System.out.print("Nachname: ");
-        String lastName = stringScanner.nextLine();
+        lastName = stringScanner.nextLine();
+
+        gender = getGender(stringScanner);
 
         System.out.print("Kurzbeschreibung (z. B. \"schwedische Schauspielerin\"): ");
-        String description = stringScanner.nextLine();
+        description = stringScanner.nextLine();
 
-        DateValue birthday = getBirthday(stringScanner);
+        birthday = getBirthday(stringScanner);
 
         System.out.print("Geburtsort: ");
-        String birthPlace = stringScanner.nextLine();
+        birthPlace = stringScanner.nextLine();
+    }
 
-        String pd = "{{Personendaten\n" +
-                "|NAME=" + lastName + ", " + firstName + "\n" +
-                "|ALTERNATIVNAMEN=\n" +
-                "|KURZBESCHREIBUNG=" + description + "\n" +
-                "|GEBURTSDATUM=" + birthday.getDateWithoutLinks() + "\n" +
-                "|GEBURTSORT=[[" + birthPlace + "]]\n" +
-                "|STERBEDATUM=\n" +
-                "|STERBEORT=\n" +
-                "}}";
+    public void printArticle() {
+        String pd = Personendaten.getPersonendaten(lastName, firstName, description, birthday, birthPlace);
 
         String birthInfo = getBirthInfo(birthday, birthPlace);
 
+        System.out.println("[[Datei:|mini|alt=|" + firstName + " " + lastName + "]]");
         System.out.println(firstName + " " + lastName + " " + birthInfo + " ist ein " + description + "." +
                 "\n\n== Leben ==" +
                 "\n\n== Weblinks ==" +
@@ -45,6 +57,7 @@ public class Console {
         if (birthday.isSet()) {
             System.out.println("[[Kategorie:Geboren " + birthday.getYear() + "]]");
         }
+        System.out.println("[[Kategorie:" + gender.getWikipediaCategory() + "]]");
         System.out.println("\n" + pd);
     }
 
@@ -68,6 +81,19 @@ public class Console {
         return birthday;
     }
 
+    private static Gender getGender(Scanner stringScanner) {
+        Gender g = null;
+
+        while (g == null) {
+            System.out.print("Geschlecht (m,w,d): ");
+            String input = stringScanner.nextLine();
+
+            g = Gender.getGenderByName(input);
+        }
+
+        return g;
+    }
+
     private static String getBirthInfo(DateValue birthday, String birthPlace) {
         String birthInfo = "";
 
@@ -80,7 +106,13 @@ public class Console {
                 birthInfo = birthInfo + " in [[" + birthPlace + "]])";
             }
         } else if (!(birthPlace.equals("") || birthPlace.equals("-"))) {
-            birthInfo = "(" + BIRTH_INDICATOR + " in [[" + birthPlace + "]])";
+            String indicator = BIRTH_INDICATOR;
+
+            if (indicator.equals("geboren am")) {
+                indicator = "geboren";
+            }
+
+            birthInfo = "(" + indicator + " in [[" + birthPlace + "]])";
         }
 
         return birthInfo;
